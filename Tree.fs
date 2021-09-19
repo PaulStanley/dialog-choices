@@ -22,6 +22,11 @@ let rec outputTree fn tree =
         let restDone = outputTree fn t
         List.append (List.append [thisDone] kidsDone) restDone
 
+let pname (n: Node) =
+    match n.Name with
+    | Some x -> x
+    | None -> ""
+        
 let rec findInTree fn tree =
     match tree with
     | [] -> None
@@ -34,11 +39,6 @@ let rec findInTree fn tree =
             | None ->
                 findInTree fn t
     
-let pname (n: Node) =
-    match n.Name with
-    | Some x -> x
-    | None -> ""
-
 let baseName (n: Node) =
     let name = pname n
     let arrayName = name.Split('_')
@@ -95,8 +95,6 @@ let rec constructSubTree depth consume acc =
                 let kids, rest = constructSubTree (depth) t []
                 constructSubTree depth rest ({newRoot with Children = kids}::acc)
             | Knot _ -> (List.rev acc), consume
-    
-
 
 let rec constructTree consume acc =
     match consume with
@@ -164,10 +162,10 @@ let rec addDiverts acc tree searchSpace =
     | [] -> List.rev acc
     | h::t ->
         let kids =
-            addDiverts [] h.Children t
+            addDiverts [] h.Children (List.append h.Children t)
         let this =
             withDivert searchSpace h
-        addDiverts ({this with Children = kids}::acc) t t
+        addDiverts ({this with Children = kids}::acc) t searchSpace
 
 
 

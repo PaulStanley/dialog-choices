@@ -13,6 +13,8 @@ let addWord lastWord lastLength thisWord indent goal built =
         let padding = 
             if thisWord.[0] = '(' && lastWord.[0] = '(' then
                 ""
+            else if lastWord = "~" then
+                ""
             else
                 " "
         if lastLength + (String.length padding) + (String.length thisWord) <= goal then
@@ -57,7 +59,7 @@ let divertPart (n: Node) =
 let oneChoice (n: Node) =
     match n.Condition with
     | None -> sprintf "(* offers %s)\n" (namePart n)
-    | Some x when x.[0] = '(' ->
+    | Some x when x.[0] = '(' || x.[0] = '~' ->
         sprintf "(* offers %s)\n%s\n" (namePart n) (wordWrap 4 70 x)
     | Some x ->
         sprintf "(* offers %s)\n    (#%s is exposed)\n" (namePart n) x

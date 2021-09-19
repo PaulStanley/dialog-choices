@@ -37,7 +37,7 @@
     - She checks her computer. "I think we can manage
       that," she says. "What class?"
     
-    * [First] "First class, of course," you say. "Do I
+    * {~(#nameless is posh)}[First] "First class, of course," you say. "Do I
       look like the kind of person who travels second
       class?"
       (par)
@@ -50,7 +50,7 @@
       "You took the words out of my mouth, dear," she says,
       "but we have to ask."
 
-    - (par) She hands over the ticket.
+    - (no space) She hands over the ticket.
       (par) "There you go love," she says. -> END
 
 === Information
