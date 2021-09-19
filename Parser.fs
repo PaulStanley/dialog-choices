@@ -164,13 +164,13 @@ let gather =
 let kCG =
     spaces >>.
     (
-    (followedBy (pchar '=') >>. knot <?> "knot")
+    (followedBy (pchar '=') >>. knot .>> spaces <?> "knot")
     <|>
-    (followedBy (pchar '*') >>. choiceP <?> "choice")
+    (followedBy (pchar '*') >>. choiceP .>> spaces <?> "choice")
     <|>
-    (followedBy (pchar '+') >>. choiceP <?> "choice")
+    (followedBy (pchar '+') >>. choiceP .>> spaces <?> "choice")
     <|>
-    (followedBy (pchar '-') >>. gather <?> "gather"))
+    (followedBy (pchar '-') >>. gather .>> spaces <?> "gather"))
 
 let parseFile =
     knot <??> "start of knot (===)">>=
