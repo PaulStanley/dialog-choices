@@ -15,4 +15,4 @@ In terms of Ink it implements:
 
 It does not attempt to implement the whole thing, because in practice much of what you do in Ink natively would be done in Dialog using Dialog code.
 
-Usage: dchoice infile [outfile]
+Usage: Choices infile [outfile]
