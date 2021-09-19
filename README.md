@@ -32,7 +32,7 @@ A knot begins with `===` then the knot name. The knot name can contain only numb
 
 You may (but do not have to) put equals signs after the knot as well.
 
-   === KnotName ===
+    === KnotName ===
 
 Nothing else should appear on the line.
 
