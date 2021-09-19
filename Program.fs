@@ -52,6 +52,9 @@ let from whom =
 
 [<EntryPoint>]
 let main argv =
+    if Array.isEmpty argv then
+        failwith "No file name. Usage: Choice infile [outfile]"
+  
     let inputFile = argv.[0]
 
     let baseFile = System.IO.Path.GetFileNameWithoutExtension(inputFile)

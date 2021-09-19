@@ -1,0 +1,49 @@
+=== Ticket_Office
+
+    An anxious and somewhat grubby official in a dirty
+    cap stares at you.
+    (par)
+    "Where do you want to go?" she asks? -> Choose_Destination
+
+=== Choose_Destination
+
+
+    * "Basingstoke["]," you say. "I've always fancied
+      going there.
+      (par)
+      "Can't think why," she says.
+    * "Paris["]," you declare, "City of Lovers."
+      (par)
+      "Nice for some," she says. "My husband prefers
+      Weston-Super-Mare. Anyway, it's no matter because
+      we don't go there." -> Choose_Destination
+    * ["I just want some information"] 
+      "Nowhere, actually," you say. "I was
+      just wanting to ask when the next train to
+      Hammersmith leaves." -> Information
+
+    - She checks her computer. "I think we can manage
+      that," she says. "What class?"
+    
+    * [First] "First class, of course," you say. "Do I
+      look like the kind of person who travels second
+      class?"
+      (par)
+      "You don't want to know," she says. She seems
+      distinctly surly.
+      (now)(#nameless is posh)
+    * [Second] "Second class," you say. "Do I look like
+      I'm made of money?"
+      (par)
+      "You took the words out of my mouth, dear," she says,
+      "but we have to ask."
+
+    - (par) She hands over the ticket.
+      (par) "There you go love," she says. -> END
+
+=== Information
+
+    "Have you looked at the sign hanging over this window,"
+    she says wearily. "T-I-C-K-E-T O-F-F-I-C-E. That's
+    a ticket office, my love, not information centre. So
+    what's it going to be?" -> Choose_Destination
