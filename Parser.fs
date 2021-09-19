@@ -9,9 +9,11 @@ let charToString (x: char list) = x |> List.toArray |> System.String
 let escapedBrack =
     pchar '\\' .>> anyOf ['['; ']']
 
+let isAsciiIdContinue = fun (c) -> isAsciiLetter c || isDigit c
+
 let validIdentifier : Parser<string,unit> = 
     //    many1 (letter <|> pchar '_') |>> charToString
-        identifier (IdentifierOptions())
+        identifier (IdentifierOptions(isAsciiIdContinue = isAsciiIdContinue))
         
 
 let divertTo =
@@ -85,7 +87,7 @@ let parseFullLabel =
 
 
 let knotStart =
-    pstring "===" >>. spaces >>. validIdentifier .>> skipRestOfLine true
+    pstring "===" >>. spaces >>. validIdentifier .>> many (anyOf [' '; '\t'; '=']) .>> newline 
 
 let choiceStart = 
     spaces >>. many1 (anyOf ['*' ; '+']) 
