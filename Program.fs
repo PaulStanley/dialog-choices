@@ -69,7 +69,7 @@ let main argv =
     
     let thisTree = Tree.constructTree parsed []
     let thisTree = Tree.applyNames "--" 1 thisTree []
-    let thisTree = Tree.resolveDiverts [] [] thisTree
+    let thisTree = Tree.addDiverts [] thisTree thisTree
     Tree.outputTree Output.warnLooseEnd thisTree |> ignore
     let catalogue = Output.catalogueNodes thisTree
     Tree.outputTree (Output.checkNode catalogue) thisTree |> ignore

@@ -10,6 +10,51 @@ let depthOf node =
     | Choice x -> x.Depth
     | Gather x -> x.Depth
 
+
+
+
+let rec outputTree fn tree =
+    match tree with
+    | [] -> []
+    | h::t ->
+        let kidsDone = outputTree fn h.Children
+        let thisDone = fn h
+        let restDone = outputTree fn t
+        List.append (List.append [thisDone] kidsDone) restDone
+
+let rec findInTree fn tree =
+    match tree with
+    | [] -> None
+    | h::t ->
+        if fn h then
+            Some h
+        else
+            match findInTree fn h.Children with
+            | Some x -> Some x
+            | None ->
+                findInTree fn t
+    
+let pname (n: Node) =
+    match n.Name with
+    | Some x -> x
+    | None -> ""
+
+let baseName (n: Node) =
+    let name = pname n
+    let arrayName = name.Split('_')
+    if Array.isEmpty arrayName then 
+        ""
+    else    
+        arrayName.[0]
+
+let nodeDepth node =
+    let name = pname node
+    let arrayName = name.Split('_')
+    (Array.length arrayName) - 1
+
+
+let summarizeTree t = outputTree pname t |> String.concat ", "
+
 let rec constructSubTree depth consume acc =
     match consume with
         | [] -> (List.rev acc), []
@@ -91,42 +136,41 @@ let rec applyNames (previous: string) mastercount (consume: Node list) (acc: Nod
         let thisNode, newCount = applyName previous mastercount h
         applyNames previous newCount t (thisNode::acc)
 
-let nextDivert inner outer =
-    let rec aux = function
-    | [] -> None
-    | h::_ when h.Kind = GatherNode -> 
-        match h.Name with
-        | Some x -> Some x
-        | None -> None
-    | _::t -> aux t
-    match aux inner with
-        | None -> aux outer
-        | x -> x
-
-let rec resolveDiverts acc outer consume =
-    let resolveDivert n =
-        let kids =
-            resolveDiverts [] consume n.Children
+let isSuitableDivert toMatch =
+    let needName = baseName toMatch
+    let maxDepth = nodeDepth toMatch
+    fun (n) ->
         match n.Kind with
-        | ChoiceNode ->
-            match n.Divert with
-            | Some _ -> {n with Children = kids}
-            | None -> {n with Divert = nextDivert kids consume; Children = kids}
-        | _ -> {n with Children = kids}
-    match consume with
-    | [] -> List.rev acc
-    | h::t -> resolveDiverts (resolveDivert h::acc) consume t
+        | GatherNode ->
+            baseName n = needName
+            && nodeDepth n <= maxDepth
+        | _ -> false
 
-let rec outputTree fn tree =
+let withDivert searchSpace n =
+    match n.Kind with
+    | KnotNode -> n
+    | GatherNode -> n //redo
+    | ChoiceNode when n.Divert <> None -> n
+    | ChoiceNode ->
+        let searchFn = isSuitableDivert n
+        let divert = 
+            match findInTree searchFn searchSpace with
+            | None -> None
+            | Some x -> Some (pname x)
+        { n with Divert = divert}
+
+let rec addDiverts acc tree searchSpace =
     match tree with
-    | [] -> []
+    | [] -> List.rev acc
     | h::t ->
-        let kidsDone = outputTree fn h.Children
-        let thisDone = fn h
-        let restDone = outputTree fn t
-        List.append (List.append [thisDone] kidsDone) restDone
+        let kids =
+            addDiverts [] h.Children t
+        let this =
+            withDivert searchSpace h
+        addDiverts ({this with Children = kids}::acc) t t
 
-let pname (n: Node) =
-    match n.Name with
-    | Some x -> x
-    | None -> "un-named"
+
+
+
+
+
