@@ -1,7 +1,5 @@
 module Tree
 
-open System
-
 open GeneralTypes
 
 let depthOf node =
@@ -9,9 +7,6 @@ let depthOf node =
     | Knot _ -> 0
     | Choice x -> x.Depth
     | Gather x -> x.Depth
-
-
-
 
 let rec outputTree fn tree =
     match tree with
@@ -166,9 +161,3 @@ let rec addDiverts acc tree searchSpace =
         let this =
             withDivert searchSpace h
         addDiverts ({this with Children = kids}::acc) t searchSpace
-
-
-
-
-
-

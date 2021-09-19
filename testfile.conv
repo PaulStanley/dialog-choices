@@ -58,4 +58,28 @@
     "Have you looked at the sign hanging over this window,"
     she says wearily. "T-I-C-K-E-T O-F-F-I-C-E. That's
     a ticket office, my love, not information centre. So
-    what's it going to be?" -> ChooseDestination
+    what's it going to be?" 
+
+    * [Complain] "Is this what you call 'customer service'?
+    around here?" you huff.
+    (par)
+    "So far as I can tell, you're not even a customer, unless
+    you are (italic)finally(roman) going to buy a ticket!" she
+    retorts. -> ChooseDestination
+
+    * [Apologise sincerely] "I'm terribly sorry," you say. "I
+    will get my ticket first and then go to the information 
+    desk."
+    (par)
+    "Good!" she says. "So where do you fancy going?" -> ChooseDestination
+
+    * [Apologise sarcastically] "Oh," you say, "I (italic)am(roman)
+    sorry. I mistakenly thought it was your job to serve customers."
+    (par)
+    "You need not take that tone with me," she replies. "My job is to
+    sell tickets, not to dish out advice. So do you want to buy
+    a ticket, or do you want to sling your hook?" -> ChooseDestination
+
+=== DUMMY
+
+DummyKnot
