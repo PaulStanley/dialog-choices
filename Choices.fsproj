@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net5.0</TargetFramework>
+    <TargetName>dchoice</TargetName>
+</PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="GeneralTypes.fs" />
+    <Compile Include="Parser.fs" />
+    <Compile Include="Tree.fs" />
+    <Compile Include="Output.fs" />
+    <Compile Include="Program.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FParsec" Version="1.1.1" />
+  </ItemGroup>
+
+</Project>
