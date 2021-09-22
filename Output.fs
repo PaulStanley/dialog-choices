@@ -64,10 +64,23 @@ let oneChoice (n: Node) =
     | Some x ->
         sprintf "(* offers %s)\n    (#%s is exposed)\n" (namePart n) x
 
+let defaultChoice (n: Node) l =
+    let rec getName (x: string list) = 
+        match x with
+        | [] -> []
+        | (h::t) ->
+            let choiceName = System.Text.RegularExpressions.Regex.Match(h, "(#\w+)")
+            let fullChoice = sprintf "    (%s is exposed)" choiceName.Value
+            fullChoice::(getName t)
+    let otherChoices = getName l |> String.concat "\n"
+    sprintf "(* flows to %s)\n%s\n" (namePart n) otherChoices
+
 let choicesFor n =
     let rec aux consume acc =
         match consume with
         | [] -> List.rev acc
+        | h::t when h.Kind = ChoiceNode && h.Label = None && h.Display = None ->
+            aux t ((defaultChoice h acc)::acc)
         | h::t when h.Kind = ChoiceNode ->
             aux t (oneChoice h :: acc)
         | _::t -> aux t acc

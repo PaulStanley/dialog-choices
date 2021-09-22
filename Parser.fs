@@ -93,14 +93,18 @@ let choiceStart =
     spaces >>. many1 (anyOf ['*' ; '+']) 
     >>= fun (a) ->
         let isSticky = 
-            if a.[0] = '+' then true else false
+            a.[0] = '+'
         (attempt (spaces >>. conditional >>= 
             fun (b) ->
                 parseFullLabel <?> "valid text" 
                 |>> fun (c) -> (List.length a, isSticky, c, b)))
         <|>
-        (spaces >>. parseFullLabel <?> "valid text"
-        |>> fun (b) -> ((List.length a), isSticky, b, "")) 
+        (attempt (spaces >>. parseFullLabel <?> "valid text"
+            |>> fun (b) -> ((List.length a), isSticky, b, ""))) 
+        <|>
+        (spaces >>. divertTo 
+            |>> fun (b) -> ((List.length a), false, ("", "", b), ""))
+
 
 let gatherStart =
     spaces >>. many1 (pchar '-')
