@@ -1,7 +1,7 @@
 # dialog-choices
 
 ## Summary
-Compile from a subset of Inkle's Ink scripting language to Dialog 
+Compile from a subset of Inkle's Ink scripting language to Dialog. This is (obviously) pointless if you are writing a *purely* choice-based game: you'd be far better probably using Ink directly. But if you are writing a "mixed" parser/choice game with substantial choice-based segments, for instance for conversation, it may help. 
 
 This is still work in progress.
 
@@ -14,10 +14,13 @@ In terms of Ink it implements:
 * Gathers
 * Diverts
 * Conditions for choices (using {})
+* Default choices
 
 It does not attempt to implement the whole thing, because in practice much of what you do in Ink natively would be done in Dialog using Dialog code.
 
 Usage: Choices infile [outfile]
+
+(In practical use, best really to construct suitable Makefiles.)
 
 ##  Notes
 
@@ -26,7 +29,7 @@ Usage: Choices infile [outfile]
 A *knot* is the basic unit. A knot consists of a named block of text
 with gathers or choices (described below).
 
-A knot begins with `===` then the knot name. The knot name can contain only numbers and letters: you cannot use `_` in a knot name: better use PascalCase instead.
+A knot begins with `===` then the knot name. The knot name can contain only numbers and letters: you **cannot** use `_` in a knot name: better use PascalCase instead.
 
     === KnotName
 
@@ -189,11 +192,12 @@ gathers. At the moment they do not.
 
 If you include a choice without either label or text, but just with a divert, it will be used as a "default choice". If all the other choices have been exhausted, the node will flow to the specified knot.
 
-    Three choices.
+    === UselessShop
+    "What can I get you?" asks the shop assistant.
 
-    * [Bread] "But we have no bread," he says.
-    * [Butter] "No butter here, try the dairy!" he says.
-    * [Jam] "We don't sell jam," he announces.
+    * [Bread] "But we have no bread," he says. -> UselessShop
+    * [Butter] "No butter here, try the dairy!" he says. -> UselessShop
+    * [Jam] "We don't sell jam," he announces. -> UselessShop
     * -> WellWhat
 
     === WellWhat
