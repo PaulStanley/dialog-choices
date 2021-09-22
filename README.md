@@ -184,3 +184,19 @@ it will go there.
 
 Note: I have not yet decided whether gathers should divert to 
 gathers. At the moment they do not.
+
+## Default choices
+
+If you include a choice without either label or text, but just with a divert, it will be used as a "default choice". If all the other choices have been exhausted, the node will flow to the specified knot.
+
+    Three choices.
+
+    * [Bread] "But we have no bread," he says.
+    * [Butter] "No butter here, try the dairy!" he says.
+    * [Jam] "We don't sell jam," he announces.
+    * -> WellWhat
+
+    === WellWhat
+    "Well, what do you sell?" you ask.
+    (par)
+    "Dreams!" he says, "Dreams of bread, butter, and jam."
