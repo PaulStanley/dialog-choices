@@ -131,17 +131,7 @@ let checkNode catalogue (n: Node) =
     | Some x ->
         printfn "WARNING: External divert to '%s' in node output as %s"
             x (namePart n)
-  
-
-
-
-
-
-    
-
-
-
-
+ 
 let outputNode n =
     match n.Kind with
     | KnotNode -> outputKnot n
