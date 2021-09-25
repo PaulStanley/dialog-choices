@@ -1,82 +1,104 @@
 open System
 open GeneralTypes
+open Argu
 
-let printOption thing = function
-    | None -> ""
-    | Some str -> sprintf "\n(%s)\n %s" thing str
+type CliArguments =
+    | [<MainCommand; ExactlyOnce; Last>] Input_File of path:string
+    | [<AltCommandLine("-o")>] Output_File of path:string
+    | [<AltCommandLine("-i")>] Indent of int
+    | [<AltCommandLine("-w")>] Wrap of int
+    | [<AltCommandLine("-f")>] Force of bool
 
-let printDivert = function
-    | None -> ""
-    | Some str -> sprintf "\n(* flows to #%s)" str
+    interface IArgParserTemplate with
 
-let printChoice (condition, choice) =
-    match condition with
-    | None -> sprintf "\n(* offers #%s)" choice
-    | Some s -> sprintf "\n(* offers #%s)\n (%s)" choice s
+        member this.Usage =
+            match this with
+            | Input_File  _ -> "input file"
+            | Output_File _ -> "output file"
+            | Indent _ -> "spaces to indent"
+            | Wrap _ -> "line to wrap at"
+            | Force _ -> "force overwrite of dangerous filename"
 
-let printChoices choices = 
-    let rec asList = 
-        function
-        | [] -> []
-        | c::cs -> (printChoice c) :: asList cs
-    in asList choices |> String.concat "\n" 
+let parseArgs args =
+    let argParser = ArgumentParser.Create<CliArguments>(programName="Choices")
 
-let printTerminating = function
-    | false -> ""
-    | true -> "\n(terminating *)"
+    let returnValue = 
+        try 
+            let results = argParser.ParseCommandLine args
+            let inputFile = results.GetResult Input_File
+            let baseName = System.IO.Path.GetFileNameWithoutExtension(inputFile)
+        
+            let outputFile = 
+                match results.TryGetResult Output_File with
+                | None -> baseName + ".dg"
+                | Some x -> x
+        
+            let indentAt =
+                match results.TryGetResult Indent with
+                | None -> 4
+                | Some x -> x
+        
+            let wrapAt =
+                match results.TryGetResult Wrap with
+                | None -> 70
+                | Some x -> x
 
-let printSticky = function
-    | false -> ""
-    | true -> "\n(sticky *)"
+            let forceOverwrite =
+                match results.TryGetResult Force with
+                | Some true -> true
+                | _ -> false
 
-(* let rec printNode node = *)
-(*     let name = sprintf "#%s" node.name
-    let label = printOption "label *" node.label
-    let disp = printOption "disp *" node.display
-    let choices = printChoices node.choices
-    let divert = printDivert node.divert
-    let sticky = printSticky node.sticky
-    let terminating = printTerminating node.terminating
-    let kids = printSubnodes node.children
-    sprintf "%s%s%s%s%s%s%s\n\n%s" name label disp choices divert sticky terminating kids
+            Some (inputFile, outputFile, indentAt, wrapAt, forceOverwrite)
+        
+        with
+        | _ -> eprintfn "%s" (argParser.PrintUsage())
+               None
 
-and printSubnodes nodes =
-        let rec asList = function 
-            | [] -> []
-            | n::ns -> (printNode n) :: asList ns
-        in asList nodes |> String.concat ""
- *)
-    // Define a function to construct a message to print
-let from whom =
-    sprintf "from %s" whom
+    returnValue
+            
 
 [<EntryPoint>]
 let main argv =
-    if Array.isEmpty argv then
-        failwith "No file name. Usage: Choice infile [outfile]"
-  
-    let inputFile = argv.[0]
 
-    let baseFile = System.IO.Path.GetFileNameWithoutExtension(inputFile)
+    let returnValue =
+        try
 
-    let outputFile = 
-        if Array.length argv > 1 then
-            argv.[1]
-        else
-            baseFile + ".dg"
+            let inputFile, outputFile, indentAt, wrapAt, forceOverwrite =
+                match parseArgs argv with
+                | None -> failwith "Invalid usage" 
+                | Some (i, o, ia, wa, fo) -> i, o, ia, wa, fo
 
-    let parsed = System.IO.File.ReadAllText(inputFile) |> Parser.doParse
+            let parsed = System.IO.File.ReadAllText(inputFile) |> Parser.doParse
     
-    let thisTree = Tree.constructTree parsed []
-    let thisTree = Tree.applyNames "--" 1 thisTree []
-    let thisTree = Tree.addDiverts [] thisTree thisTree
-    Tree.outputTree Output.warnLooseEnd thisTree |> ignore
-    let catalogue = Output.catalogueNodes thisTree
-    Tree.outputTree (Output.checkNode catalogue) thisTree |> ignore
-    let outputData = 
-        Tree.outputTree Output.outputKnot thisTree
-        |> String.concat "\n"
-    let tag = sprintf "%%%% Automatically generated from %s\n" inputFile
-    let outputData = tag + outputData + "\n%% END OF GENERATED OUTPUT"
-    System.IO.File.WriteAllText(outputFile, outputData)
-    0
+            let thisTree = Tree.constructTree parsed []
+            let thisTree = Tree.applyNames "--" 1 thisTree []
+            let thisTree = Tree.addDiverts [] thisTree thisTree
+            Tree.outputTree Output.warnLooseEnd thisTree |> ignore
+            let catalogue = Output.catalogueNodes thisTree
+            Tree.outputTree (Output.checkNode catalogue) thisTree |> ignore
+            let outputData = 
+                Tree.outputTree (Output.outputKnot indentAt wrapAt) thisTree
+                |> String.concat "\n"
+            let tag = sprintf "%%%% Automatically generated from %s\n" inputFile
+            let outputData = tag + outputData + "\n%% END OF GENERATED OUTPUT"
+            if (System.IO.Path.GetFileNameWithoutExtension(inputFile) <> System.IO.Path.GetFileNameWithoutExtension(outputFile)) && IO.File.Exists(outputFile) && (not forceOverwrite) then
+                raise ChoiceOverwriteException
+                1
+            else 
+                System.IO.File.WriteAllText(outputFile, outputData)
+                0
+        with
+        | ChoiceParseException a ->
+                eprintfn "%s" a
+                1
+        | ChoiceOverwriteException ->
+                eprintfn "%s" "ERROR: Attempt to overwrite existing file with different base name\n(if you mean to do that, run with --force=true)"
+                1
+        | :? IO.FileNotFoundException as x ->
+                eprintfn "%s" x.Message
+                1
+        | x ->
+                if x.Message = "Invalid usage" then 1 else raise x
+            
+
+    returnValue

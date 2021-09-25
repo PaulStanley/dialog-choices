@@ -113,57 +113,63 @@ let gatherStart =
         |>> fun (b) -> (List.length a, b)
 
 let knot = 
-    spaces >>. knotStart >>=
-        fun (a) ->
-            (postLabel .>> spaces <|> preturn ("", "")) |>> fun (b) -> 
-                let text, divert = b
-                let disp =
-                    match text.Trim() with
-                    | "" -> None
-                    | x -> Some x
-                let divert =
-                    match divert with
-                    | "" -> None
-                    | x -> Some x
-                (Knot {Name = a; Disp = disp; Divert = divert})
+    spaces >>. getPosition >>=
+        fun (posn) ->
+        knotStart >>=
+            fun (a) ->
+                (postLabel .>> spaces <|> preturn ("", "")) |>> fun (b) -> 
+                    let text, divert = b
+                    let disp =
+                        match text.Trim() with
+                        | "" -> None
+                        | x -> Some x
+                    let divert =
+                        match divert with
+                        | "" -> None
+                        | x -> Some x
+                    (Knot {Name = a; Disp = disp; Divert = divert; Position = Some (int posn.Line)})
 
 let choiceP =
-    spaces >>. choiceStart |>> fun (a) ->
-        let depth, labelType, (label, text, divert), condition = a
-        let text = text.Trim() 
-        let disp = 
-            match text with
-            | "" -> None
-            | x -> Some x
-        let label =
-            match label with
-            | "" -> None
-            | x -> Some x
-        let divert =
-            match divert with
-            | "" -> None
-            | x -> Some x
-        let condition =
-            match condition with
-            | "" -> None
-            | x -> Some x
-        (Choice { Name = None; Sticky = labelType; Condition = condition; Depth = depth; Label = label; Disp = disp; Divert = divert})
+    spaces >>. getPosition >>=
+        fun (posn) ->
+        choiceStart |>> fun (a) ->
+            let depth, labelType, (label, text, divert), condition = a
+            let text = text.Trim() 
+            let disp = 
+                match text with
+                | "" -> None
+                | x -> Some x
+            let label =
+                match label with
+                | "" -> None
+                | x -> Some x
+            let divert =
+                match divert with
+                | "" -> None
+                | x -> Some x
+            let condition =
+                match condition with
+                | "" -> None
+                | x -> Some x
+            (Choice { Name = None; Sticky = labelType; Condition = condition; Depth = depth; Label = label; Disp = disp; Divert = divert; Position = Some (int posn.Line)})
 
 
 let gather =
-    spaces >>. gatherStart |>>
-    fun (a) -> 
-        let depth, (text, divert) = a
-        let text = text.Trim() 
-        let disp = 
-            match text with
-            | "" -> None
-            | x -> Some x
-        let divert =
-            match divert with
-            | "" -> None
-            | x -> Some x
-        (Gather {Name = None; Disp = disp; Divert = divert; Depth = depth})
+    spaces >>. gatherStart >>=
+    fun (a) ->
+        getPosition |>>
+        fun (posn) -> 
+            let depth, (text, divert) = a
+            let text = text.Trim() 
+            let disp = 
+                match text with
+                | "" -> None
+                | x -> Some x
+            let divert =
+                match divert with
+                | "" -> None
+                | x -> Some x
+            (Gather {Name = None; Disp = disp; Divert = divert; Depth = depth; Position = Some (int posn.Line)})
 
 let kCG =
     spaces >>.
@@ -192,7 +198,7 @@ let doParse str =
     match run parseFile str with
     | Success(result, _, _) -> result
     | Failure(errorMsg, _, _) ->
-        printfn "Parse failed %s" errorMsg
+        raise (ChoiceParseException errorMsg)
         []
 
 let takeWhile x : Parser<string, unit> = many1 (satisfy x) |>> charToString

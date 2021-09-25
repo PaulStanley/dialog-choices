@@ -1,5 +1,8 @@
 module GeneralTypes
 
+exception ChoiceParseException of string
+exception ChoiceOverwriteException
+
 type Choice = string Option * string
 
 type Kind = KnotNode | ChoiceNode | GatherNode
@@ -9,6 +12,7 @@ type Node = {
     Children: Node list;
     Label: string Option;
     Condition: string Option;
+    Position: int Option;
     Divert: string Option;
     Display: string Option;
     Terminating: bool;
@@ -18,25 +22,28 @@ type Node = {
 
 type KnotNode = {
     Name: string;
-    Disp: string option
-    Divert: string option
+    Disp: string Option;
+    Position: int Option;
+    Divert: string Option
 }
 
 type ChoiceNode = {
-    Name: string option;
-    Disp: string option;
-    Label: string option;
-    Divert: string option;
-    Depth: int
-    Condition: string option;
+    Name: string Option;
+    Disp: string Option;
+    Label: string Option;
+    Divert: string Option;
+    Depth: int;
+    Condition: string Option;
+    Position: int Option;
     Sticky: bool;
 }
 
 type GatherNode = {
     Depth: int;
-    Name: string option;
-    Disp: string option;
-    Divert: string option
+    Name: string Option;
+    Disp: string Option;
+    Position: int Option;
+    Divert: string Option
 }
 
 type Widget =

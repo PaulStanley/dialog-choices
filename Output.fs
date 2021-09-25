@@ -45,10 +45,10 @@ let namePart (n: Node) =
         printfn "Warning: Unnamed node"
         "#unnamed"
 
-let displayPart (n: Node) =
+let displayPart (n: Node) indentAt wrapAt =
     match n.Display with
     | None -> ""
-    | Some x -> "(display *)\n" + (wordWrap 4 70 x)
+    | Some x -> "(display *)\n" + (wordWrap indentAt wrapAt x)
 
 let divertPart (n: Node) =
     match n.Divert with
@@ -56,61 +56,72 @@ let divertPart (n: Node) =
     | Some "END" -> "(terminating *)\n"
     | Some x -> sprintf "(* flows to #%s)\n" x
 
-let oneChoice (n: Node) =
+let oneChoice (n: Node) indentAt wrapAt =
     match n.Condition with
     | None -> sprintf "(* offers %s)\n" (namePart n)
     | Some x when x.[0] = '(' || x.[0] = '~' ->
-        sprintf "(* offers %s)\n%s\n" (namePart n) (wordWrap 4 70 x)
+        sprintf "(* offers %s)\n%s\n" (namePart n) (wordWrap indentAt wrapAt x)
     | Some x ->
-        sprintf "(* offers %s)\n    (#%s is exposed)\n" (namePart n) x
+        sprintf "(* offers %s)\n%*s(#%s is exposed)\n" (namePart n) indentAt " " x
 
-let defaultChoice (n: Node) l =
+let defaultChoice (n: Node) l indentAt =
     let rec getName (x: string list) = 
         match x with
         | [] -> []
         | (h::t) ->
             let choiceName = System.Text.RegularExpressions.Regex.Match(h, "(#\w+)")
-            let fullChoice = sprintf "    (%s is exposed)" choiceName.Value
+            let fullChoice = sprintf "%*s(%s is exposed)" indentAt " " choiceName.Value
             fullChoice::(getName t)
     let otherChoices = getName l |> String.concat "\n"
     sprintf "(* flows to %s)\n%s\n" (namePart n) otherChoices
 
-let choicesFor n =
+let choicesFor n indentAt wrapAt=
     let rec aux consume acc =
         match consume with
         | [] -> List.rev acc
         | h::t when h.Kind = ChoiceNode && h.Label = None && h.Display = None ->
-            aux t ((defaultChoice h acc)::acc)
+            aux t ((defaultChoice h acc indentAt)::acc)
         | h::t when h.Kind = ChoiceNode ->
-            aux t (oneChoice h :: acc)
+            aux t (oneChoice h indentAt wrapAt :: acc)
         | _::t -> aux t acc
     aux n.Children [] |> String.concat ""
 
-let labelFor (n: Node) =
+let labelFor (n: Node) indentAt wrapAt =
     match n.Label with
     | None -> ""
-    | Some x -> sprintf ("(label *)\n%s") (wordWrap 4 70 x)
+    | Some x -> sprintf ("(label *)\n%s") (wordWrap indentAt wrapAt x)
 
 let isSticky (n: Node) =
      match n.Sticky with
         | false -> ""
         | true -> "(sticky *)\n" 
 
-let outputKnot n =
+let positionPart (n: Node) =
+    match n.Position with
+    | None -> ""
+    | Some x -> sprintf "%%%% source line %d\n" x
+
+let posPart (n: Node) =
+    match n.Position with
+    | None -> "[ERROR! No position recorded]"
+    | Some x -> sprintf "%d" x
+
+let outputKnot indentAt wrapAt n =
+    let position = positionPart n
     let name = namePart n
-    let display = displayPart n
+    let display = displayPart n indentAt wrapAt
     let divert = divertPart n
-    let choices = choicesFor n
-    let label = labelFor n
+    let choices = choicesFor n indentAt wrapAt
+    let label = labelFor n indentAt wrapAt
     let sticky = isSticky n
-    sprintf "%s\n%s%s%s%s%s" name display label divert choices sticky
+    sprintf "%s%s\n%s%s%s%s%s" position name display label divert choices sticky
 
 let warnLooseEnd n =
     match n.Kind with
     | GatherNode when n.Divert = None && n.Children = [] ->
-        printfn "WARNING: Loose end in node output as %s?" (namePart n)
+        eprintfn "WARNING: Loose end in node output as %s (node begins at source line %s)?" (namePart n) (posPart n)
     | KnotNode when n.Divert = None && n.Children = [] ->
-        printfn "WARNING: Loose end in node output as %s?" (namePart n)
+        eprintfn "WARNING: Loose end in node output as %s (node begins at source line %s)?" (namePart n) (posPart n)
     | _ -> ()
 
 let catalogueNode (n: Node) =
@@ -129,11 +140,6 @@ let checkNode catalogue (n: Node) =
     | Some x when List.contains x catalogue -> ()
     | Some x when x = "END" -> ()
     | Some x ->
-        printfn "WARNING: External divert to '%s' in node output as %s"
-            x (namePart n)
+        eprintfn "WARNING: External divert to '%s' in node output as %s (node begins at source line %s)"
+            x (namePart n) (posPart n)
  
-let outputNode n =
-    match n.Kind with
-    | KnotNode -> outputKnot n
-    | GatherNode -> outputKnot n
-    | ChoiceNode -> outputKnot n

@@ -190,7 +190,9 @@ gathers. At the moment they do not.
 
 ## Default choices
 
-If you include a choice without either label or text, but just with a divert, it will be used as a "default choice". If all the other choices have been exhausted, the node will flow to the specified knot.
+If you include a choice without either label or text, but just with a 
+divert, it will be used as a "default choice". If all the other 
+choices have been exhausted, the node will flow to the specified knot.
 
     === UselessShop
     "What can I get you?" asks the shop assistant.

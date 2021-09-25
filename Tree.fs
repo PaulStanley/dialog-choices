@@ -70,7 +70,8 @@ let rec constructSubTree depth consume acc =
                         Terminating = false;
                         Sticky = x.Sticky;
                         Divert = x.Divert;
-                        Kind = ChoiceNode
+                        Kind = ChoiceNode;
+                        Position = x.Position;
                     }
                 let kids, rest = constructSubTree (depth + 1) t []
                 constructSubTree depth rest ({newRoot with Children = kids}::acc)
@@ -85,7 +86,8 @@ let rec constructSubTree depth consume acc =
                         Sticky = false;
                         Condition = None;
                         Divert = x.Divert;
-                        Kind = GatherNode
+                        Kind = GatherNode;
+                        Position = x.Position;
                     }
                 let kids, rest = constructSubTree (depth) t []
                 constructSubTree depth rest ({newRoot with Children = kids}::acc)
@@ -107,6 +109,7 @@ let rec constructTree consume acc =
                     Terminating = false; //WRONG -- need to look at divert
                     Sticky = false;
                     Condition = None;
+                    Position = None;
                     Kind = KnotNode
                 }
             let kids, rest = constructSubTree 1 t []
