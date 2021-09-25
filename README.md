@@ -18,7 +18,20 @@ In terms of Ink it implements:
 
 It does not attempt to implement the whole thing, because in practice much of what you do in Ink natively would be done in Dialog using Dialog code.
 
-Usage: Choices infile [outfile]
+Usage: Choices [--output-file, -o outfile] [-indent, -i indent] [--wrap, -w wrap column] [--force, -f] input file
+
+Note:
+
+* --output-file, -o: File to output to. Optional. Default is the same name and path as the input file, with the ".dg" extension.
+
+* --indent, -i: Indent amount. Optional. Default is 4 spaces.
+
+* --wrap, -w: Column to wrap at. Optional. Default is 70.
+
+* --force, -f: Use `--force=true` if you want to output to a file 
+  *other than* the default which already exists. This is there as a 
+  protection to stop you accidentally clobbering a file you need, and 
+  (in the worst case) your main project file.
 
 (In practical use, best really to construct suitable Makefiles.)
 
@@ -107,7 +120,7 @@ Produces
 * A label of `Tell him he's bonkers`
 * Text of `"You are bonkers!" you say`
 
-## Diverts
+### Diverts
 
 After a choice (or after the text of knots, or gathers) you can
 *divert* to another knot (or, for that matter, back to the same one):
@@ -136,7 +149,7 @@ choice sequence.
 unexpectedly, the compiler will warn about them. But you may have
 your reasons, so it will still compile.)
 
-## Conditions
+### Conditions
 
 You can put a condition in a choice, in which case the choice
 will only be displayed if the condition is met. Place the
@@ -159,7 +172,7 @@ Will translate in dialog code to to
     ($ offers #[choice])
         (#refusal is exposed)
 
-## Gathers
+### Gathers
 
 A gather is a bit like an anonymous knot. It is produced by beginning 
 a line with a hyphen `-`:
@@ -188,7 +201,7 @@ it will go there.
 Note: I have not yet decided whether gathers should divert to 
 gathers. At the moment they do not.
 
-## Default choices
+### Default choices
 
 If you include a choice without either label or text, but just with a 
 divert, it will be used as a "default choice". If all the other 
